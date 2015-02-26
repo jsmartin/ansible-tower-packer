@@ -1,0 +1,56 @@
+{
+  "variables": {
+      "tower_version": ""
+  },
+  "builders": [
+    {
+      "vm_name": "tower-{{ user `tower_version` }}",
+      "source_path": "output-virtualbox-iso/centos7.0.ovf",
+      "type": "virtualbox-ovf",
+      "ssh_password": "vagrant",
+      "ssh_username": "vagrant",
+      "ssh_wait_timeout": "50000s",
+      "headless": "false",
+      "vboxmanage": [
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--memory",
+          "1024"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--cpus",
+          "2"
+        ]
+      ],
+      "shutdown_command": "echo 'vagrant' | sudo -S /sbin/halt -h -p"
+    }
+  ],
+
+  "provisioners": [
+    {
+      "type": "shell",
+      "scripts": [
+        "scripts/tower-bootstrap.sh"
+      ],
+      "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'"
+    },
+    {
+      "type": "ansible-local",
+      "playbook_file": "/tmp/ansible-tower-setup/site.yml",
+      "playbook_dir": "/tmp/ansible-tower-setup", 
+      "extra_arguments": "-s -v -e @tower_setup_conf.yml"
+    }
+
+  ],
+  "post-processors": [
+    {
+      "type": "vagrant",
+      "keep_input_artifact": true,
+      "compression_level": 9,
+      "output": "tower-{{ user `tower_version` }}.box"
+    }
+  ]
+}
