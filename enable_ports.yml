@@ -1,0 +1,25 @@
+- hosts: localhost
+  connection: local
+  sudo: yes
+  tasks:
+
+  - name: get tower version
+    command: rpm -q ansible-tower --qf "%{VERSION}"
+    register: tower_version
+    changed_when: no
+
+  - name: start firewalld
+    service: name=firewalld state=started
+
+  - name: enable required ports for tower
+    firewalld: port={{ item }}/tcp permanent=true state=enabled
+    with_items:
+    - 8080
+    - 80
+    - 443
+    notify: restart firewalld
+    when: tower_version.stdout | version_compare('2.2', '<=')
+
+  handlers:
+  - name: restart firewalld
+    service: name=firewalld state=restarted

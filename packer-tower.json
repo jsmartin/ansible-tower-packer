@@ -1,6 +1,7 @@
 {
   "variables": {
-      "tower_version": ""
+      "tower_version": "",
+      "token": ""
   },
   "builders": [
     {
@@ -10,6 +11,7 @@
       "ssh_password": "vagrant",
       "ssh_username": "vagrant",
       "ssh_wait_timeout": "50000s",
+      "format": "ova",
       "headless": "false",
       "vboxmanage": [
         [
@@ -42,6 +44,10 @@
       "playbook_file": "/tmp/ansible-tower-setup/site.yml",
       "playbook_dir": "/tmp/ansible-tower-setup", 
       "extra_arguments": "-s -v -e @tower_setup_conf.yml"
+    },
+    {
+      "type": "ansible-local",
+      "playbook_file": "enable_ports.yml"
     }
 
   ],
@@ -50,7 +56,8 @@
       "type": "vagrant",
       "keep_input_artifact": true,
       "compression_level": 9,
-      "output": "tower-{{ user `tower_version` }}.box"
+      "vagrantfile_template": "Vagrantfile",
+      "output": "tower-{{ user `tower_version` }}_{{.Provider}}.box"
     }
   ]
 }
