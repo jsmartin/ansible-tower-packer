@@ -1,12 +1,14 @@
 {
   "variables": {
       "tower_version": "",
-      "token": ""
+      "ansible_version": ""
+      
   },
   "builders": [
     {
-      "vm_name": "tower-{{ user `tower_version` }}",
+      "vm_name": "tower-{{ user `tower_version` }}-ansible_{{ user `ansible_version` }}",
       "source_path": "output-virtualbox-iso/centos7.0.ovf",
+      "output_directory": "tower-{{ user `tower_version` }}_ansible_{{ user `ansible_version` }}-ova",
       "type": "virtualbox-ovf",
       "ssh_password": "vagrant",
       "ssh_username": "vagrant",
@@ -34,7 +36,12 @@
   "provisioners": [
     {
       "type": "shell",
+      "environment_vars" : [
+      "tower_version={{ user `tower_version` }}",
+      "ansible_version={{ user `ansible_version` }}"
+      ],
       "scripts": [
+        "scripts/get-tower.sh",
         "scripts/tower-bootstrap.sh"
       ],
       "execute_command": "echo 'vagrant' | {{.Vars}} sudo -S -E bash '{{.Path}}'"
@@ -57,7 +64,7 @@
       "keep_input_artifact": true,
       "compression_level": 9,
       "vagrantfile_template": "Vagrantfile",
-      "output": "tower-{{ user `tower_version` }}_{{.Provider}}.box"
+      "output": "tower-{{ user `tower_version` }}_ansible_{{ user `ansible_version` }}_{{.Provider}}.box"
     }
   ]
 }
